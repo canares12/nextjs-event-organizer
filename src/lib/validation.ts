@@ -7,8 +7,8 @@ export const createUserSchema = z.object({
   clerkId: requiredString,
   email: requiredString.max(100).email(),
   username: requiredString.max(100),
-  firstName: z.string().max(100).optional(),
-  lastName: z.string().max(100).optional(),
+  firstName: z.string().max(100).nullable(),
+  lastName: z.string().max(100).nullable(),
   photo: requiredString,
 });
 
