@@ -1,3 +1,4 @@
+"use server";
 import { Prisma, User } from "@prisma/client";
 import { CreateUserValues } from "../validation";
 import prisma from "./prisma";
