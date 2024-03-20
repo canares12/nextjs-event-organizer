@@ -48,7 +48,7 @@ export async function POST(request: Request) {
           photo: image_url,
         },
         update: {
-          username: username!,
+          username: username ? username : "",
           firstName: first_name,
           lastName: last_name,
           photo: image_url,
