@@ -41,10 +41,10 @@ export async function POST(request: Request) {
         where: { clerkId: id },
         create: {
           clerkId: id,
-          username: username!,
+          username: username ? username : "",
           email: email_addresses[0].email_address,
-          firstName: first_name,
-          lastName: last_name,
+          firstName: first_name ? first_name : "",
+          lastName: last_name ? last_name : "",
           photo: image_url,
         },
         update: {
@@ -60,4 +60,3 @@ export async function POST(request: Request) {
   }
   return new Response("", { status: 200 });
 }
-
