@@ -55,7 +55,6 @@ export async function POST(request: Request) {
 
   const eventType = evt.type;
   if (eventType === "user.created" || eventType === "user.updated") {
-    // const { id, ...attributes } = evt.data;
     const { id, email_addresses, image_url, first_name, last_name, username } =
       evt.data;
 
@@ -83,5 +82,16 @@ export async function POST(request: Request) {
       handleError(error);
     }
   }
+
+  if (eventType === "user.deleted") {
+    const { id } = evt.data;
+
+    const deletedUser = await prisma.user.delete({
+      where: { clerkId: id },
+    });
+
+    return NextResponse.json({ message: "OK", user: deletedUser });
+  }
+
   return new Response("", { status: 200 });
 }
