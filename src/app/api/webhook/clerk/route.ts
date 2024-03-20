@@ -1,4 +1,5 @@
 import prisma from "@/lib/db/prisma";
+import { handleError } from "@/lib/utils";
 import { clerkClient, WebhookEvent } from "@clerk/nextjs/server";
 import { IncomingHttpHeaders } from "http";
 import { headers } from "next/headers";
@@ -7,7 +8,7 @@ import { Webhook, WebhookRequiredHeaders } from "svix";
 
 const webhookSecret = process.env.WEBHOOK_SECRET || "";
 
-async function handler(request: Request) {
+export async function POST(request: Request) {
   const payload = await request.json();
   const headersList = headers();
   const heads = {
@@ -35,27 +36,28 @@ async function handler(request: Request) {
     const { id, email_addresses, image_url, first_name, last_name, username } =
       evt.data;
 
-    await prisma.user.upsert({
-      where: { clerkId: id },
-      create: {
-        clerkId: id,
-        username: username!,
-        email: email_addresses[0].email_address,
-        firstName: first_name,
-        lastName: last_name,
-        photo: image_url,
-      },
-      update: { 
-        username: username!,
-        firstName: first_name,
-        lastName: last_name,
-        photo: image_url,
-       },
-    });
+    try {
+      await prisma.user.upsert({
+        where: { clerkId: id },
+        create: {
+          clerkId: id,
+          username: username!,
+          email: email_addresses[0].email_address,
+          firstName: first_name,
+          lastName: last_name,
+          photo: image_url,
+        },
+        update: {
+          username: username!,
+          firstName: first_name,
+          lastName: last_name,
+          photo: image_url,
+        },
+      });
+    } catch (error) {
+      handleError(error);
+    }
   }
   return new Response("", { status: 200 });
 }
 
-export const GET = handler;
-export const POST = handler;
-export const PUT = handler;
