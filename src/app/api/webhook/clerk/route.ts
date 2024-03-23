@@ -1,11 +1,9 @@
 import prisma from "@/lib/db/prisma";
 import { handleError } from "@/lib/utils";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import { WebhookEvent, clerkClient } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { Webhook, WebhookRequiredHeaders } from "svix";
-
-const webhookSecret = process.env.WEBHOOK_SECRET || "";
+import { Webhook } from "svix";
 
 export async function POST(request: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -77,6 +75,13 @@ export async function POST(request: Request) {
         },
       });
 
+      if (user && eventType === "user.created") {
+        await clerkClient.users.updateUserMetadata(id, {
+          publicMetadata: {
+            userId: user.id,
+          },
+        });
+      }
       return NextResponse.json({ message: "OK", user: user });
     } catch (error) {
       handleError(error);
@@ -86,11 +91,15 @@ export async function POST(request: Request) {
   if (eventType === "user.deleted") {
     const { id } = evt.data;
 
-    const deletedUser = await prisma.user.delete({
-      where: { clerkId: id },
-    });
+    try {
+      const deletedUser = await prisma.user.delete({
+        where: { clerkId: id },
+      });
 
-    return NextResponse.json({ message: "OK", user: deletedUser });
+      return NextResponse.json({ message: "OK", user: deletedUser });
+    } catch (error) {
+      handleError(error);
+    }
   }
 
   return new Response("", { status: 200 });
